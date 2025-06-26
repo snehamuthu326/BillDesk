@@ -1,0 +1,80 @@
+Certainly! Below is a well-detailed **Problem Statement** for your Desktop Billing Application project, suitable for reports, documentation, or explaining your project to others:
+
+---
+
+## 📝 **Problem Statement**
+
+### Title:
+
+**"Development of a Desktop Application for Generating Customized Mattress Bills with Dynamic Excel-Driven Cost Calculation"**
+
+---
+
+### 1. **Background:**
+
+In the mattress manufacturing industry, customers often request customized products based on their preferences for materials, dimensions, and other add-ons. Calculating the cost and generating an accurate bill for these customized products is a manual, time-consuming, and error-prone process.
+
+Currently, product costs such as core material rates, foam costs, fabric options, and packaging charges are maintained in an Excel sheet. Any change in these costs requires manual recalculation across all pending bills, making the process inefficient and increasing the likelihood of pricing discrepancies.
+
+---
+
+### 2. **Objective:**
+
+The objective of this project is to develop a **user-friendly Desktop Application using Tkinter (Python)** that enables the staff to:
+
+✅ Quickly generate professional bills for customized mattress products.
+✅ Dynamically fetch cost details from the provided Excel sheet, ensuring real-time price accuracy.
+✅ Recalculate costs instantly whenever the Excel sheet is updated (e.g., changes in material rates).
+✅ Offer flexibility for both standard (default) and fully customized product configurations.
+✅ Generate a downloadable, printable PDF version of the bill for record-keeping or customer sharing.
+
+---
+
+### 3. **Problem Description:**
+
+The billing process for customized mattress products faces the following challenges:
+
+* Manual cost calculations prone to human error.
+* Inconsistent bill formats leading to unprofessional appearance.
+* Difficulty tracking pricing changes across different materials.
+* Lack of automation in generating customer-ready bills.
+* No system for dynamically reflecting updates from the master costing Excel sheet.
+
+This project aims to eliminate these issues by introducing an automated desktop billing application integrated with the existing Excel sheet.
+
+---
+
+### 4. **Proposed Solution Features:**
+
+The application will:
+
+✔ Load default product configurations (core type, dimensions, discount) from the Excel sheet.
+✔ Prompt the user to accept defaults or customize the product (core, foam, fabric, packaging, dimensions, discount).
+✔ Dynamically calculate area-based costs using the latest rates from the Excel sheet.
+✔ Automatically compute MRP, applicable discount, and Net Price.
+✔ Generate a professional PDF bill ready for printing or sharing.
+✔ Reflect any cost changes made in the Excel sheet immediately, without modifying the application code.
+
+---
+
+5. **Technologies Used:**
+
+* **Programming Language:** Python
+* **GUI Framework:** Tkinter
+* **Excel Integration:** pandas, openpyxl
+* **PDF Generation:** fpdf or reportlab (based on preference)
+* **Data Source:** Existing Costing Sheet maintained in Microsoft Excel
+
+---
+
+6. **Benefits:**
+
+* Accurate and consistent billing
+* Reduced manual effort and errors
+* Easy maintenance with Excel as the single source of truth for costs
+* Professional and standardized bill format
+* Quick response to customer requirements
+
+---
+
+Would you like me to prepare this as a formal **PDF or Word document** version too?

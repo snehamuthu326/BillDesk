@@ -1,0 +1,94 @@
+Desktop Application for Generating Bills for Customized Mattress Products Using Live Excel Data
+
+
+Problem Statement:
+
+In the mattress industry, customer preferences can vary widely — from the type of core material and foam used to fabric choices, sizes, and packaging. Naturally, these choices affect the final cost of the product. Right now, our team uses an Excel sheet to keep track of all material rates and product costs. But when it comes to preparing a bill for a customer, the process is mostly manual.
+
+This manual system often leads to delays and increases the chances of calculation errors, especially when prices in the Excel sheet change. It also means the bills lack a standardized, professional appearance.
+
+The Need: We need a simple desktop app that can make this process quicker, more accurate, and more reliable. The idea is to connect the existing Excel costing sheet directly to the app, so the latest material rates are always reflected. This way, staff members don’t have to worry about manual price calculations or outdated cost data.
+
+
+
+Proposed Solution:
+
+The app will be a lightweight desktop tool built using Python and Tkinter. As soon as it's opened, the app will show the standard mattress configuration based on the default values from the Excel sheet. Users can either proceed with these defaults or customize the product by selecting different materials, sizes, and add-ons.
+
+The app will automatically calculate the price based on the area and materials chosen, apply discounts, and instantly show the final price. Finally, it will generate a clean, professional PDF bill that can be saved or printed for the customer.
+
+The best part? If the material rates change in the Excel sheet, the app picks it up immediately — no code changes required.
+
+Benefits: 
+
+* It makes billing faster and foolproof.
+* Prices are always accurate, straight from the source — the Excel file.
+* It saves the team from repetitive manual work.
+* The bill looks professional and consistent.
+* There’s no need to re-train staff whenever product rates are updated.
+
+Tools & Technologies:
+
+Python for app logic
+Tkinter for the desktop interface
+pandas/openpyxl to read Excel data
+fpdf/reportlab to generate the final bill in PDF format
+
+
+
+Questions on Business Goals and Usage: 
+
+What is the primary goal of this pricing tool?
+(e.g., Quotation generation, internal costing, customer demos?)
+
+Who will be the main users of this application?
+(Sales team, factory staff, office admin, or customers?)
+
+Do you plan to use this tool for all product lines or only selected mattress types?
+
+Should this tool be integrated with your existing billing or inventory system?
+
+Are there seasonal or promotional discounts that change frequently?
+
+If yes, should the tool allow dynamic discount updates?
+
+
+
+📊 Questions on Excel Sheet and Pricing Logic
+
+How frequently is the Excel sheet updated?
+Do you want the tool to always read from the latest file, or cache the data?
+Is the cost per square inch fixed or does it change based on quantity or region?
+Are all core materials used equally, or are some more preferred?
+
+This can help prioritize UI placement or defaults.
+Should we consider additional layers (like topper, fabric, etc.) in the price logic later?
+
+Should we add transport or GST charges automatically?
+
+
+
+💻 Questions on User Experience and Features
+
+Do you want an option to save the final quote as a PDF or send it via email?
+
+Should the application support a multi-language interface (Tamil/Hindi/English) for better usability?
+
+Would you like a mobile-friendly version, or is desktop use sufficient for now?
+
+Is there a need to maintain a database of previous quotations or customers?
+
+Should we add a feature to auto-suggest sizes based on standard mattress sizes (like Queen, King, Single)?
+
+
+
+🛠 Questions on Support and Maintenance
+Who will maintain the Excel file and keep the prices up-to-date?
+
+Do you need a training session or documentation for your team to use the app?
+
+Are you open to hosting this app online, or do you prefer it to stay offline on local systems?
+
+Do you need a login system to prevent unauthorized access?
+
+Would you like to track how often or who is using the application for management purposes?
