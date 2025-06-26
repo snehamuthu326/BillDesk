@@ -7,7 +7,7 @@ latex_foam_core = ["Topper", "Natural Latex", "Memory foam", "Srilanka Latex Reb
 spring_core = ["Bonnel (only 5) Spring", "Pocketed (only 5) Spring"]
 foam_core = ["EP Foam", "PU Foam"]
 
-foam_options = ["None", "Single Foam", "Single foam + Single foam", "Double foam + double foam"]
+foam_options = ["None","Single Foam", "Single foam + Single foam", "Double foam + double foam"]
 fabric_options = ["Fabric Regular (120 GSM)", "Fabric Premium (250 GSM)", "Fabric Ultra Premium (350 GSM)"]
 
 compulsory = "Quilting"
@@ -39,8 +39,9 @@ for core, foam, fabric in itertools.product(foam_core, foam_options, fabric_opti
 df = pd.DataFrame(combinations, columns=["Core", "Foam", "Fabric", "Compulsory"])
 
 # Export to Excel
+print(df)
 output_path = r"D:\Internship\Mattress_Combinations.xlsx"
-df.to_excel(output_path, index=False)
+#df.to_excel(output_path, index=False)
 
 print(f"Total combinations generated: {len(combinations)}")
 print(f"File saved at: {output_path}")
