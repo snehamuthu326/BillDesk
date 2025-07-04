@@ -9,8 +9,21 @@ df = pd.read_excel(price_sheet_path, sheet_name="new")
 
 # Create product-rate dictionary
 product_rates = {row['Product']: row['Rate'] for _, row in df.iterrows()}
-print(json.dumps(product_rates, indent = 2))
-# Extract PVC and Packing cost
+#print(json.dumps(product_rates, indent = 2))
+
+# Production Costs
+labour_rate = df.loc[df['Production'] == 'Labour', 'ProRate'].values[0]
+transport_rate = df.loc[df['Production'] == 'Transport (Default: 350)', 'ProRate'].values[0]
+indirect_expense_rate = df.loc[df['Production'] == 'Indirect & Office expense (Default: 7)', 'ProRate'].values[0]
+wastage_rate = df.loc[df['Production'] == 'Wastage (Default: 3)', 'ProRate'].values[0]
+
+# Retail Markups
+margin_percent = df.loc[df['Retail'] == 'Margin 25%', 'ReRate'].values[0]
+tax_percent = df.loc[df['Retail'] == 'Tax 18%', 'ReRate'].values[0]
+working_cap_percent = df.loc[df['Retail'] == 'Working Capital Interest (Default: 5)', 'ReRate'].values[0]
+dealer_margin_percent = df.loc[df['Retail'] == 'Dealer Margin', 'ReRate'].values[0]
+
+# Packaging Costs
 pvc_packing_rate = product_rates["PVC Packing"]
 flat_packing_cost = product_rates["Thread, Cornershoe, Label"]
 
@@ -87,16 +100,15 @@ for core, core_thick in core_options:
                 combo_name = f"{core} {core_thick}\" | {foam} {foam_thick}\" | {fabric}"
                 mattress_combinations.append((combo_name, core, core_thick, foam, foam_thick, fabric, fabric_thick))
 
-
 print(f"Total mattress combinations generated: {len(mattress_combinations)}")
-#print(mattress_combinations)
+
 # ------------------ Generate Size Combinations ------------------
 
 size_combinations = list(itertools.product(length_options, width_options))
 
 # ------------------ Create Final Matrix ------------------
 
-columns = ["Length", "Width"] + [combo[0] for combo in mattress_combinations]
+columns = ["Length", "Width"] + [f"{combo[0]} | MRP" for combo in mattress_combinations] + [f"{combo[0]} | Dealer Price" for combo in mattress_combinations]
 data = []
 
 for length, width in size_combinations:
@@ -108,37 +120,45 @@ for length, width in size_combinations:
         foam, foam_thick = combo[3], combo[4]
         fabric, fabric_thick = combo[5], combo[6]
 
-        print("----------------------------------------------------")
-        # Get rates from price sheet
+        # Rates from price sheet
         core_rate = product_rates[core]
-        print(f"Core: {core}, Rate: {core_rate}")
-
         foam_rate = product_rates[foam] if foam != "None" else 0
-        print(f"Foam: {foam}, Rate: {foam_rate}")
-
         fabric_rate = product_rates[fabric]
-        print(f"Fabric: {fabric}, Rate: {fabric_rate}") 
-
         quilting_rate = product_rates["Quilting"]
 
-        # Cost Calculation
+        # ------------------ Cost Calculation ------------------
         core_cost = surface_area * core_thick * core_rate
         foam_cost = surface_area * foam_thick * foam_rate * 2
         fabric_cost = surface_area * fabric_thick * fabric_rate * 2
         quilting_cost = surface_area * quilting_thickness * quilting_rate * 2
         pvc_cost = surface_area * pvc_packing_rate
-        total_cost = core_cost + foam_cost + fabric_cost + quilting_cost + pvc_cost + flat_packing_cost
+        material_cost = core_cost + foam_cost + fabric_cost + quilting_cost + pvc_cost + flat_packing_cost
 
-        print(f"Total Cost for {combo[0]}: {total_cost}")
+        thickness = core_thick + foam_thick + fabric_thick + quilting_thickness
+        # Add production costs
+        total_cost = material_cost + (labour_rate*thickness*surface_area) + transport_rate + (indirect_expense_rate*material_cost/100) + (wastage_rate*material_cost/100)
 
-        row.append(round(total_cost, 2))
+        # ------------------ MRP Calculation ------------------
+        mrp = total_cost * (1 + margin_percent / 100)
+        mrp += mrp * (tax_percent / 100)
+        mrp += mrp * (working_cap_percent / 100)
+        mrp = round(mrp, 2)
+
+        # Dealer Price
+        dealer_price = mrp + (mrp * dealer_margin_percent / 100)
+        dealer_price = round(dealer_price, 2)
+
+        row.append(mrp)
+        #row.append(dealer_price) 
+        
+        #two rows one mrp and another dealer price atlast
 
     data.append(row)
 
 # ------------------ Export to Excel ------------------
 
 df_final = pd.DataFrame(data, columns=columns)
-output_path = r"D:\Internship\Final_Mattress_Matrix_With_Rates.xlsx"
+output_path = r"D:\Internship\Final_Mattress_Matrix_With_MRP_Dealer.xlsx"
 df_final.to_excel(output_path, index=False)
 
-print(f"Matrix with Net Rates generated and saved to: {output_path}")
+print(f"Matrix with MRP & Dealer Price saved to: {output_path}")
