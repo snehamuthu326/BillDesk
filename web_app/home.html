@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customized Product Rate</title>
+    <link rel="stylesheet" href="hosy.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="left-section">
+        <h2>Generate Net Rate for<br>Customized Product's</h2>
+
+        <label>Length (inches)</label>
+        <input type="number" id="length">
+
+        <label>Width (inches)</label>
+        <input type="number" id="width">
+
+        <label>Materials Used</label>
+        <select id="material">
+            {% for m in materials %}
+                <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Thickness (inches)</label>
+        <input type="number" id="thickness">
+
+        <label>Dealer Margin %</label>
+        <input type="number" id="dealer_margin" placeholder="Optional">
+
+        <button class="view-rate-btn" onclick="generateBill()">View Rate</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="right-section">
+        <button class="action-btn" onclick="viewPDF()">View Costing Sheet</button>
+        <button class="action-btn">View Matrix Sheet</button>
+        <button class="action-btn">Customize Sheet</button>
+    </div>
+</div>
+
+<script>
+function generateBill() {
+    const data = {
+        length: document.getElementById('length').value,
+        width: document.getElementById('width').value,
+        material: document.getElementById('material').value,
+        thickness: document.getElementById('thickness').value,
+        dealer_margin: document.getElementById('dealer_margin').value || 0
+    };
+
+    fetch('/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+        alert(`Net Rate: Rs.${res.mrp}\nDealer Price: Rs.${res.dealer_price}`);
+        window.open(res.pdf_path, '_blank');
+    })
+    .catch(err => alert("Error: " + err));
+}
+
+function viewPDF() {
+    window.open('Final_Mattress_Matrix_With_Rates.xlsx', '_blank');
+}
+</script>
+
+</body>
+</html>
+
+
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customized Product Rate</title>
+    <link rel="stylesheet" href="hosy.css">
+</head>
+<body>
+    
+    <div class="container">
+        <div class="left-section">
+            <h2>Generate Net Rate for<br>Customized Product's</h2>
+
+            <div class="input-group">
+                <label for="length">Length</label>
+                <input type="text" id="length" placeholder="Enter Length">
+            </div>
+
+            <div class="input-group">
+                <label for="width">Width</label>
+                <input type="text" id="width" placeholder="Enter Width">
+            </div>
+
+            <div class="input-group">
+                <label for="materials">Materials Used</label>
+                <div class="materials-input">
+                    <input type="text" id="materials" placeholder="Select Materials">
+                    <button class="add-btn">+</button>
+                </div>
+            </div>
+
+            <button class="view-rate-btn">View Rate</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="right-section">
+            <button class="action-btn">View Costing Sheet</button>
+            <button class="action-btn">View Matrix Sheet</button>
+            <button class="action-btn">Customize Sheet</button>
+        </div>
+    </div>
+
+</body>
+</html>
+-->

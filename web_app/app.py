@@ -1,92 +1,111 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 import pandas as pd
-import itertools
+from fpdf import FPDF
 import os
 
 app = Flask(__name__)
 
-# ----------------- Read Price Sheet -----------------
-price_sheet_path = r"D:\Projects\Internship\Costing_Sheet.xlsx"
-output_path = r"D:\Projects\Internship\Final_Mattress_Matrix_With_MRP_Dealer.xlsx"
+# ---------------- Read Price Sheet ----------------
 
-df = pd.read_excel(price_sheet_path, sheet_name="new")
-product_rates = {row['Product']: row['Rate'] for _, row in df.iterrows()}
-labour_rate = df.loc[df['Production'] == 'Labour', 'ProRate'].values[0]
-transport_rate = df.loc[df['Production'] == 'Transport (Default: 350)', 'ProRate'].values[0]
-indirect_expense_rate = df.loc[df['Production'] == 'Indirect & Office expense (Default: 7)', 'ProRate'].values[0]
-wastage_rate = df.loc[df['Production'] == 'Wastage (Default: 3)', 'ProRate'].values[0]
-margin_percent = df.loc[df['Retail'] == 'Margin 25%', 'ReRate'].values[0]
-tax_percent = df.loc[df['Retail'] == 'Tax 18%', 'ReRate'].values[0]
-working_cap_percent = df.loc[df['Retail'] == 'Working Capital Interest (Default: 5)', 'ReRate'].values[0]
-dealer_margin_percent = df.loc[df['Retail'] == 'Dealer Margin', 'ReRate'].values[0]
-pvc_packing_rate = product_rates["PVC Packing"]
-flat_packing_cost = product_rates["Thread, Cornershoe, Label"]
-quilting_thickness = 1
+def read_price_sheet():
+    df = pd.read_excel("Costing_Sheet.xlsx", sheet_name="new")
+    product_rates = {row['Product']: row['Rate'] for _, row in df.iterrows()}
+    
+    labour_rate = df.loc[df['Production'] == 'Labour', 'ProRate'].values[0]
+    transport_rate = df.loc[df['Production'] == 'Transport (Default: 350)', 'ProRate'].values[0]
+    indirect_expense_rate = df.loc[df['Production'] == 'Indirect & Office expense (Default: 7)', 'ProRate'].values[0]
+    wastage_rate = df.loc[df['Production'] == 'Wastage (Default: 3)', 'ProRate'].values[0]
 
-custom_products_list = []
-custom_sizes = []
+    margin_percent = df.loc[df['Retail'] == 'Margin 25%', 'ReRate'].values[0]
+    tax_percent = df.loc[df['Retail'] == 'Tax 18%', 'ReRate'].values[0]
+    working_cap_percent = df.loc[df['Retail'] == 'Working Capital Interest (Default: 5)', 'ReRate'].values[0]
 
-length_options = [72, 75, 78, 84]
-width_options = [30, 36, 42, 44, 48, 60, 72]
+    pvc_packing_rate = product_rates["PVC Packing"]
+    flat_packing_cost = product_rates["Thread, Cornershoe, Label"]
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        material = request.form.get("material")
-        thickness = request.form.get("thickness")
-        length = request.form.get("length")
-        width = request.form.get("width")
+    return product_rates, labour_rate, transport_rate, indirect_expense_rate, wastage_rate, margin_percent, tax_percent, working_cap_percent, pvc_packing_rate, flat_packing_cost
 
-        if material and thickness:
-            custom_products_list.append([(material, float(thickness))])
+# ---------------- MRP Calculation ----------------
 
-        if length and width:
-            custom_sizes.append((float(length), float(width)))
+def calculate_mrp(length, width, material, thickness, dealer_margin_percent):
+    (product_rates, labour_rate, transport_rate, indirect_expense_rate, wastage_rate,
+     margin_percent, tax_percent, working_cap_percent, pvc_packing_rate, flat_packing_cost) = read_price_sheet()
 
-        return redirect("/")
+    surface_area = length * width
+    quilting_thickness = 1
+    quilting_rate = product_rates["Quilting"]
 
-    return render_template("index.html",
-                           product_rates=product_rates,
-                           custom_products=custom_products_list,
-                           custom_sizes=custom_sizes)
+    material_cost = surface_area * thickness * product_rates[material]
+    quilting_cost = surface_area * quilting_thickness * quilting_rate * 2
+    pvc_cost = surface_area * pvc_packing_rate
 
-@app.route("/generate")
-def generate():
-    if not custom_products_list:
-        return "Please add at least one custom product.", 400
+    total_material_cost = material_cost + quilting_cost + pvc_cost + flat_packing_cost
+    total_thickness = thickness + quilting_thickness
 
-    columns = ["Length", "Width"]
-    for prod in custom_products_list:
-        desc = " + ".join([f"{mat} {thk}\"" for mat, thk in prod])
-        columns += [f"{desc} | Net Rate", f"{desc} | MRP"]
+    total_cost = total_material_cost + (labour_rate * total_thickness * surface_area) + transport_rate
+    total_cost += (indirect_expense_rate * total_material_cost / 100) + (wastage_rate * total_material_cost / 100)
 
-    all_lengths = sorted(set(length_options + [l for l, _ in custom_sizes]))
-    all_widths = sorted(set(width_options + [w for _, w in custom_sizes]))
-    data = []
-
-    for length, width in itertools.product(all_lengths, all_widths):
-        row = [length, width]
-        for prod in custom_products_list:
-            mrp, dealer_price = calculate_total_cost(length, width, prod)
-            row += [mrp, dealer_price]
-        data.append(row)
-
-    pd.DataFrame(data, columns=columns).to_excel(output_path, index=False)
-    return send_file(output_path, as_attachment=True)
-
-def calculate_total_cost(length, width, layers):
-    area = length * width
-    material_cost = sum(area * thk * product_rates.get(mat, 0) for mat, thk in layers)
-    total_thickness = sum(thk for _, thk in layers) + quilting_thickness
-    quilting_rate = product_rates.get("Quilting", 0)
-    material_cost += area * quilting_thickness * quilting_rate * 2
-    material_cost += area * pvc_packing_rate + flat_packing_cost
-    total_cost = material_cost + (labour_rate * total_thickness * area) + transport_rate
-    total_cost += (indirect_expense_rate * material_cost / 100) + (wastage_rate * material_cost / 100)
     mrp = total_cost * (1 + margin_percent / 100)
-    mrp += mrp * (tax_percent / 100) + mrp * (working_cap_percent / 100)
-    dealer_price = mrp + (mrp * dealer_margin_percent / 100)
-    return round(mrp, 2), round(dealer_price, 2)
+    mrp += mrp * (tax_percent / 100)
+    mrp += mrp * (working_cap_percent / 100)
+    mrp = round(mrp, 2)
 
-if __name__ == "__main__":
+    dealer_price = mrp + (mrp * dealer_margin_percent / 100) if dealer_margin_percent else mrp
+    dealer_price = round(dealer_price, 2)
+
+    return mrp, dealer_price
+
+# ---------------- PDF Export ----------------
+
+def export_pdf(details, mrp):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", size=12)
+
+    pdf.cell(200, 10, text="Mattress Bill", ln=True, align="C")
+    pdf.ln(10)
+
+    for key, value in details.items():
+        pdf.cell(200, 10, txt=f"{key}: {value}", ln=True)
+
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Total MRP: Rs.{mrp}", ln=True)
+
+    output_path = "static/Mattress_Bill.pdf"
+    pdf.output(output_path)
+    return output_path
+
+# ---------------- Routes ----------------
+
+@app.route('/')
+def index():
+    product_rates, *_ = read_price_sheet()
+    material_options = [m for m in product_rates.keys() if m not in ["PVC Packing", "Thread, Cornershoe, Label", "Quilting"]]
+    return render_template("home.html", materials=material_options)
+
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    data = request.json
+    length = float(data['length'])
+    width = float(data['width'])
+    material = data['material']
+    thickness = float(data['thickness'])
+    dealer_margin = float(data['dealer_margin'])
+
+    mrp, dealer_price = calculate_mrp(length, width, material, thickness, dealer_margin)
+
+    details = {
+        "Length": f"{length}\"",
+        "Width": f"{width}\"",
+        "Material": material,
+        "Thickness": f"{thickness}\""
+    }
+
+    pdf_path = export_pdf(details, mrp)
+
+    return jsonify({"mrp": mrp, "dealer_price": dealer_price, "pdf_path": pdf_path})
+
+# ---------------- Run ----------------
+
+if __name__ == '__main__':
     app.run(debug=True)

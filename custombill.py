@@ -7,7 +7,7 @@ import os
 # ------------------ Read Price Sheet Function ------------------
 
 def read_price_sheet():
-    price_sheet_path = r"D:\\Internship\\Costing_Sheet.xlsx"
+    price_sheet_path = r"D:\Projects\Internship\Costing_Sheet.xlsx"
     df = pd.read_excel(price_sheet_path, sheet_name="new")
 
     product_rates = {row['Product']: row['Rate'] for _, row in df.iterrows()}
@@ -79,7 +79,7 @@ def export_pdf(details, mrp, dealer_price):
 
     pdf.ln(5)
     pdf.cell(200, 10, text=f"Total MRP: Rs.{mrp}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.cell(200, 10, text=f"Dealer Price: Rs.{dealer_price}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    #pdf.cell(200, 10, text=f"Dealer Price: Rs.{dealer_price}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
     output_path = r"D:\\Internship\\Mattress_Bill.pdf"
     pdf.output(output_path)
@@ -117,9 +117,9 @@ def run_gui():
     width_entry = tk.Entry(scrollable_frame)
     width_entry.grid(row=1, column=1)
 
-    tk.Label(scrollable_frame, text="Dealer Margin %:").grid(row=2, column=0)
-    dealer_margin_entry = tk.Entry(scrollable_frame)
-    dealer_margin_entry.grid(row=2, column=1)
+    #tk.Label(scrollable_frame, text="Dealer Margin %:").grid(row=2, column=0)
+    #dealer_margin_entry = tk.Entry(scrollable_frame)
+    #dealer_margin_entry.grid(row=2, column=1)
 
     material_options = [m for m in product_rates.keys() if m not in ["PVC Packing", "Thread, Cornershoe, Label", "Quilting"]]
 
